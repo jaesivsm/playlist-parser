@@ -39,7 +39,7 @@ class RhythmboxPlaylist(Playlist):
 
 	def add_file(self, path):
 		if path.startswith('file://'):
-			self.songs.append(songs.Song(path[7:]))
+			self.add_song(songs.Song(path[7:]))
 		else:
 			self.songs[-1].__init__(self.songs[-1].path + path)
 
@@ -52,7 +52,7 @@ class PlsPlaylist(Playlist, utils.XmlParser):
 
 	def parsing_start_element(self, tag, attrs):
 		if tag == "track":
-			self.current_song = songs.Song()
+			self.current_song = songs.Song(encoding=self.encoding)
 
 	def parsing_char_data(self, data):
 		if "track" in self.previous_tags and self.current_song is not None:

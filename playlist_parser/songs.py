@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 
 class Song(object):
 
-	def __init__(self, location=None):
+	def __init__(self, location=None, encoding='UTF8'):
+		self.encoding = encoding
 		self.location = location
 		if location is not None:
 			self.title = os.path.basename(location)
@@ -39,7 +40,7 @@ class Song(object):
 
 	def __str__(self):
 		if self.title is not None:
-			return self.title.encode('utf8')
+			return self.title.encode(self.encoding)
 		return 'song'
 	def __repr__(self):
 		return r'<Song %r>' % self.title

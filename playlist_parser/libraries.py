@@ -34,7 +34,8 @@ class RhythmboxLibrary(Library, utils.XmlParser):
 
 	def parsing_start_element(self, tag, attrs):
 		if self.current_tag == "playlist" and attrs['type'] == "static":
-			self.current_playlist = playlists.RhythmboxPlaylist(attrs['name'])
+			self.current_playlist = playlists.RhythmboxPlaylist(
+					attrs['name'], encoding=self.encoding)
 
 	def parsing_char_data(self, data):
 		if self.current_tag == "location":

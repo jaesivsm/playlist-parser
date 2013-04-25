@@ -19,6 +19,7 @@ class XmlParser(object):
 		self.__parser.StartElementHandler = self.__parsing_start_element
 		self.__parser.EndElementHandler = self.__parsing_end_element
 		self.__parser.CharacterDataHandler = self.__parsing_char_data
+		self.__parser.XmlDeclHandler = self.__parsing_xml_declaration
 
 		if xml_file:
 			self.parse(xml_file)
@@ -49,3 +50,6 @@ class XmlParser(object):
 
 	def parsing_end_element(self, tag):
 		pass
+
+	def __parsing_xml_declaration(self, version, encoding, standalone):
+		self.encoding = encoding
