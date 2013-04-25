@@ -11,8 +11,9 @@ logger = logging.getLogger(__name__)
 class Song(object):
 
 	def __init__(self, path):
-		self.path = path
 		self.name = os.path.basename(path)
+		self.path = path
+		logger.info("%s at %s" % (self.name, self.path))
 
 	def copy(self, dst):
 		if os.path.exists(os.path.join(dst, os.path.basename(self.path))):
@@ -36,10 +37,3 @@ class Song(object):
 		return self.name.encode('utf8')
 	def __repr__(self):
 		return r'<Song %r>' % self.name
-
-
-class RhythmboxSong(Song):
-
-	def complete_path(self, path):
-		self.path += path
-		self.name = os.path.basename(self.path)

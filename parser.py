@@ -7,7 +7,7 @@ from playlist_parser import libraries
 
 logger = logging.getLogger()
 
-formatter = logging.Formatter('%(module)s - %(levelname)-8s %(message)s')
+formatter = logging.Formatter('%(module)-9s - %(levelname)-8s - %(message)s')
 handler = logging.StreamHandler()
 handler.setFormatter(formatter)
 logger.addHandler(handler)
