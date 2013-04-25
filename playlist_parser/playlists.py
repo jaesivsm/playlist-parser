@@ -17,6 +17,9 @@ class Playlist(object):
 		self.songs = []
 		self.encoding = encoding
 
+	def add_song(self, song):
+		self.songs.append(song)
+
 	def add_file(self, path):
 		self.songs.append(songs.Song(path))
 
@@ -43,12 +46,20 @@ class RhythmboxPlaylist(Playlist):
 class PlsPlaylist(Playlist, utils.XmlParser):
 
 	def __init__(self, playlist_path):
+		self.current_song = None
 		Playlist.__init__(self, os.path.basename(playlist_path))
 		utils.XmlParser.__init__(self, playlist_path)
 
-	def parsing_start_element(self, name, attrs):
-		logger.info('_parsing_start_element %s %s' % (name, attrs))
+	def parsing_start_element(self, tag, attrs):
+		if tag == "track":
+			self.current_song = songs.Song()
+
 	def parsing_char_data(self, data):
-		logger.info('_parsing_char_data %s' % (data))
-	def parsing_end_element(self, name):
-		logger.info('_parsing_end_element %s' % (name))
+		if "track" in self.previous_tags and self.current_song is not None:
+			setattr(self.current_song, self.current_tag, data)
+
+	def parsing_end_element(self, tag):
+		if tag == "track" and self.current_song is not None:
+			self.add_song(self.current_song)
+			logger.info(repr(self.current_song))
+			self.current_song = None

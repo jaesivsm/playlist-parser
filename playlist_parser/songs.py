@@ -10,13 +10,17 @@ logger = logging.getLogger(__name__)
 
 class Song(object):
 
-	def __init__(self, path):
-		self.name = os.path.basename(path)
-		self.path = path
-		logger.info("%s at %s" % (self.name, self.path))
+	def __init__(self, location=None):
+		self.location = location
+		if location is not None:
+			self.title = os.path.basename(location)
+			self.location = location
+			logger.info("%s at %s" % (self.title, self.location))
+		else:
+			self.title = None
 
 	def copy(self, dst):
-		if os.path.exists(os.path.join(dst, os.path.basename(self.path))):
+		if os.path.exists(os.path.join(dst, os.path.basename(self.location))):
 			logger.info(u'Song %r already here' % self)
 			return
 		if not os.path.exists(dst):
@@ -28,12 +32,14 @@ class Song(object):
 					raise
 		try:
 			logger.info(u'Copying %r to %s' % (self, dst))
-			shutil.copy(self.path, dst)
+			shutil.copy(self.location, dst)
 		except Exception, error:
 			logger.exception(error)
 			pass
 
 	def __str__(self):
-		return self.name.encode('utf8')
+		if self.title is not None:
+			return self.title.encode('utf8')
+		return 'song'
 	def __repr__(self):
-		return r'<Song %r>' % self.name
+		return r'<Song %r>' % self.title

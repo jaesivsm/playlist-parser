@@ -15,7 +15,6 @@ class Library(object):
 	def __init__(self):
 		logging.info('Creating Library')
 		self.playlists = []
-		self.current_playlist = None
 
 	def copy(self, dst):
 		logger.info('Copying %r to %s' % (self, dst))
@@ -26,6 +25,7 @@ class Library(object):
 class RhythmboxLibrary(Library, utils.XmlParser):
 
 	def __init__(self, rhythmbox_file=None):
+		self.current_playlist = None
 		if not rhythmbox_file:
 			rhythmbox_file = os.path.join(xdg_data_home,
 					'rhythmbox', 'playlists.xml')
