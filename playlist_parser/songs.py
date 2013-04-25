@@ -3,6 +3,10 @@
 
 import shutil
 import os.path
+import logging
+
+logger = logging.getLogger(__name__)
+
 
 class Song(object):
 
@@ -11,21 +15,21 @@ class Song(object):
 		self.name = os.path.basename(path)
 
 	def copy(self, dst):
-		if os.path.exists(os.path.join(dst, os.path.basename(file_name))):
-			print(u'Song %r already here' % self)
+		if os.path.exists(os.path.join(dst, os.path.basename(self.path))):
+			logger.info(u'Song %r already here' % self)
 			return
 		if not os.path.exists(dst):
-			print("Creating directory %r" % dst)
+			logger.info("Creating directory %r" % dst)
 			try:
 				os.mkdir(dst)
 			except OSError, error:
 				if error.errno != 17:
 					raise
 		try:
-			print(u'Copying %r to %s' % (self, dst))
+			logger.info(u'Copying %r to %s' % (self, dst))
 			shutil.copy(self.path, dst)
 		except Exception, error:
-			print error
+			logger.exception(error)
 			pass
 
 	def __str__(self):
