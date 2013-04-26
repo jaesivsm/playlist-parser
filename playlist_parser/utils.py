@@ -22,13 +22,12 @@ class XmlParser(object):
 		self.__parser.XmlDeclHandler = self.__parsing_xml_declaration
 
 		if xml_file:
-			self.parse(xml_file)
+			self.read(xml_file)
 
-	def parse(self, file_to_parse=None):
-		logger.info('Parsing %s' % file_to_parse)
-		if file_to_parse:
-			with open(file_to_parse, 'r') as fd:
-				self.__parser.Parse(urllib.unquote(fd.read()))
+	def read(self, path):
+		logger.info('Parsing %s' % path)
+		with open(path, 'r') as fd:
+			self.__parser.Parse(urllib.unquote(fd.read()))
 
 	def __parsing_start_element(self, tag, attrs):
 		self.previous_tags.append(self.current_tag)

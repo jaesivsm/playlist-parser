@@ -10,15 +10,12 @@ logger = logging.getLogger(__name__)
 
 class Song(object):
 
-	def __init__(self, location=None, encoding='UTF8'):
+	def __init__(self, location=None, title=None, encoding='UTF8'):
+		self.title = title
 		self.encoding = encoding
 		self.location = location
-		if location is not None:
+		if self.location is not None and self.title is None:
 			self.title = os.path.basename(location)
-			self.location = location
-			logger.info("%s at %s" % (self.title, self.location))
-		else:
-			self.title = None
 
 	def copy(self, dst):
 		if os.path.exists(os.path.join(dst, os.path.basename(self.location))):
