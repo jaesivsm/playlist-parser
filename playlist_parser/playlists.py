@@ -25,6 +25,13 @@ class Playlist(object):
     def add_file(self, path):
         self.songs.append(Song(path))
 
+    def __iter__(self):
+        for song in self.songs:
+            yield song
+
+    def __getitem__(self, key):
+        return self.songs[key]
+
     def copy(self, dst):
         logger.info('Copying %r to %s' % (self, dst))
         dst = os.path.join(dst, self.name)
