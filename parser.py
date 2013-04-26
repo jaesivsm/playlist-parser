@@ -14,3 +14,5 @@ logger.addHandler(handler)
 logger.setLevel(logging.INFO)
 
 library = libraries.RhythmboxLibrary()
+
+# vim: set et sts=4 sw=4 tw=120:
