@@ -97,8 +97,7 @@ class M3uPlaylist(FilePlaylist):
 	def read(self, path):
 		logger.info('Parsing %s' % path)
 		with open(path, 'r') as fd:
-			lines = fd.xreadlines()
-			for line in lines:
+			for line in fd:
 				logger.debug("Parsing %r" % line)
 				if line.startswith('#EXTINF:'):
 					line = line.strip()[8:]
@@ -109,7 +108,7 @@ class M3uPlaylist(FilePlaylist):
 						creator, title = line.split(' -' )
 					do_not_add = False
 					while not location:
-						location = self.get_abs_path(lines.next().strip())
+						location = self.get_abs_path(fd.next().strip())
 						if os.path.exists(location):
 							break
 						elif location.startswith('#EXT'):
