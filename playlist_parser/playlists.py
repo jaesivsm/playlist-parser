@@ -50,7 +50,7 @@ class RhythmboxPlaylist(Playlist):
         if path.startswith('file://'):
             self.add_song(Song(path[7:]))
         else:
-            self.songs[-1].__init__(self.songs[-1].path + path)
+            self.songs[-1].__init__(self.songs[-1].location + path)
 
 
 class FilePlaylist(Playlist):
