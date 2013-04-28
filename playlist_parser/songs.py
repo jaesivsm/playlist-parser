@@ -15,7 +15,10 @@ class Song(object):
         self.encoding = encoding
         self.location = location
         if self.location is not None and self.title is None:
-            self.title = os.path.basename(location)
+            self.set_title()
+
+    def set_title(self):
+        self.title = os.path.splitext(os.path.basename(self.location))[0]
 
     def copy(self, dst):
         if os.path.exists(os.path.join(dst, os.path.basename(self.location))):

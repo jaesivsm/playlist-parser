@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 class Playlist(object):
 
     def __init__(self, name=None, encoding='UTF8'):
-        logger.info(u'Creating playlist %s' % name)
+        logger.info(u'Creating playlist %r' % name)
         self.name = name
         self.songs = []
         self.encoding = encoding
@@ -50,20 +50,20 @@ class RhythmboxPlaylist(Playlist):
         if path.startswith('file://'):
             self.add_song(Song(path[7:]))
         else:
-            self.songs[-1].__init__(self.songs[-1].location + path)
+            self.songs[-1].location += path
+            self.songs[-1].set_title()
 
 
 class FilePlaylist(Playlist):
 
     def __init__(self, path):
-        Playlist.__init__(self, os.path.basename(path))
+        Playlist.__init__(self, os.path.splitext(os.path.basename(path))[0])
 
         self.path = path
         self.directory = os.path.dirname(path)
-        self.path_is_absolute = True if path.startswith('/') else False
 
     def get_abs_path(self, path):
-        if path.startswith('/') or not self.path_is_absolute:
+        if os.path.isasb(path):
             return path
         return os.path.join(self.directory, path)
 
