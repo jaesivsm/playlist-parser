@@ -62,7 +62,10 @@ class FilePlaylist(Playlist):
         self.path = path
         self.directory = os.path.dirname(path)
 
-    def get_abs_path(self, path):
+        if os.path.exists(path):
+            self.read()
+
+    def get_asb_path(self, path):
         if os.path.isasb(path):
             return path
         return os.path.join(self.directory, path)
@@ -83,7 +86,7 @@ class PlsPlaylist(FilePlaylist, utils.XmlParser):
     def parsing_char_data(self, data):
         if "track" in self.previous_tags and self.current_song is not None:
             if self.current_tag == "location":
-                data = self.get_abs_path(data)
+                data = self.get_asb_path(data)
             setattr(self.current_song, self.current_tag, data)
 
     def parsing_end_element(self, tag):
@@ -113,7 +116,7 @@ class M3uPlaylist(FilePlaylist):
             else:
                 title = line
             for line in fd:
-                location = self.get_abs_path(line.strip())
+                location = self.get_asb_path(line.strip())
                 if os.path.exists(location):
                     break
                 elif location.startswith('#EXT'):

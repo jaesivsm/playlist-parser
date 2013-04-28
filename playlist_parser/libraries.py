@@ -39,6 +39,9 @@ class RhythmboxLibrary(Library, utils.XmlParser):
         Library.__init__(self)
         utils.XmlParser.__init__(self, rhythmbox_file)
 
+        if os.path.exists(rhythmbox_file):
+            self.read(rhythmbox_file)
+
     def parsing_start_element(self, tag, attrs):
         if self.current_tag == "playlist" and attrs['type'] == "static":
             self.current_playlist = playlists.RhythmboxPlaylist(

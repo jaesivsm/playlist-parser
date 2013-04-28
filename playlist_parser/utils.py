@@ -21,9 +21,6 @@ class XmlParser(object):
         self.__parser.CharacterDataHandler = self.__parsing_char_data
         self.__parser.XmlDeclHandler = self.__parsing_xml_declaration
 
-        if xml_file:
-            self.read(xml_file)
-
     def read(self, path):
         logger.info('Parsing %s' % path)
         with open(path, 'r') as fd:
