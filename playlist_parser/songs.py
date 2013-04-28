@@ -14,6 +14,8 @@ class Song(object):
         self.title = title
         self.encoding = encoding
         self.location = location
+        self.length = None
+        self.creator = None
         if self.location is not None and self.title is None:
             self.set_title()
 

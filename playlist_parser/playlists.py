@@ -63,10 +63,10 @@ class FilePlaylist(Playlist):
         self.directory = os.path.dirname(path)
 
         if os.path.exists(path):
-            self.read()
+            self.read(path)
 
     def get_asb_path(self, path):
-        if os.path.isasb(path):
+        if os.path.isabs(path):
             return path
         return os.path.join(self.directory, path)
 
@@ -76,7 +76,6 @@ class PlsPlaylist(FilePlaylist, utils.XmlParser):
     def __init__(self, playlist_path):
         FilePlaylist.__init__(self, playlist_path)
         utils.XmlParser.__init__(self, playlist_path)
-
         self.current_song = None
 
     def parsing_start_element(self, tag, attrs):
@@ -99,13 +98,9 @@ class M3uPlaylist(FilePlaylist):
 
     def __init__(self, playlist_path):
         FilePlaylist.__init__(self, playlist_path)
-
         self.current_song = None
-        if playlist_path:
-            self.read(playlist_path)
 
     def __parse_line(self, line, fd, path):
-        logger.debug("Parsing %r" % line)
         if line.startswith('#EXTINF:'):
             line = line.strip()[8:]
             length = creator = title = location = None
@@ -139,9 +134,27 @@ class M3uPlaylist(FilePlaylist):
                 logger.warn('File not found %r in playlist %r' % (line, path))
 
     def read(self, path):
-        logger.info('Parsing %s' % path)
+        logger.info('Parsing %r' % path)
         with open(path, 'r') as fd:
+            if fd.encoding:
+                self.encoding = fd.encoding
             for line in fd:
                 self.__parse_line(line, fd, path)
+
+    def write(self, path):
+        logger.info('Writing %r' % path)
+        with open(path, 'w') as fd:
+            fd.write('#EXTM3U\n')
+            for song in self.songs:
+                if not song.location:
+                    continue
+                logger.debug('Adding song %r to playlist %r' % (song, self))
+                fd.write('#EXTINF:%s,%s%s%s\n'
+                        % (song.length if song.length else '',
+                            song.creator if song.creator else '',
+                            ' - ' if song.creator and song.title else '',
+                            song.title if song.title else ''))
+                fd.write("%s\n" % song.location)
+
 
 # vim: set et sts=4 sw=4 tw=120:
