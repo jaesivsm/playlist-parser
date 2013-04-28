@@ -101,43 +101,44 @@ class M3uPlaylist(FilePlaylist):
         if playlist_path:
             self.read(playlist_path)
 
+    def __parse_line(self, line, fd, path):
+        logger.debug("Parsing %r" % line)
+        if line.startswith('#EXTINF:'):
+            line = line.strip()[8:]
+            length = creator = title = location = None
+            if ',' in line:
+                length, line = line.split(',', 1)
+            if ' - ' in line:
+                creator, title = line.split(' - ', 1)
+            else:
+                title = line
+            for line in fd:
+                location = self.get_abs_path(line.strip())
+                if os.path.exists(location):
+                    break
+                elif location.startswith('#EXT'):
+                    self.__parse_line(line, fd, path)
+                    return
+                else:
+                    logger.warn('File not found %r in playlist %r'
+                            % (location, path))
+                    location = None
+            song = Song(location, title)
+            if creator is not None:
+                song.creator = creator
+            self.add_song(song)
+        elif line.startswith('#EXTM3U'):
+            return
+        else:
+            if os.path.exists(line):
+                self.add_file(line)
+            else:
+                logger.warn('File not found %r in playlist %r' % (line, path))
+
     def read(self, path):
         logger.info('Parsing %s' % path)
         with open(path, 'r') as fd:
             for line in fd:
-                logger.debug("Parsing %r" % line)
-                if line.startswith('#EXTINF:'):
-                    line = line.strip()[8:]
-                    length = creator = title = location = None
-                    if ',' in line:
-                        length, line = line.split(',', 1)
-                    if ' - ' in line:
-                        creator, title = line.split(' -' )
-                    do_not_add = False
-                    while not location:
-                        location = self.get_abs_path(fd.next().strip())
-                        if os.path.exists(location):
-                            break
-                        elif location.startswith('#EXT'):
-                            do_not_add = True
-                            break
-                        else:
-                            logger.warn('File not found %r in playlist %r'
-                                    % (location, path))
-                            location = None
-                    if do_not_add:
-                        continue
-                    song = Song(location, title)
-                    if creator is not None:
-                        song.creator = creator
-                    self.add_song(song)
-                elif line.startswith('#EXTM3U'):
-                    continue
-                else:
-                    if os.path.exists(line):
-                        self.add_file(line)
-                    else:
-                        logger.warn('File not found %r in playlist %r'
-                                % (line, path))
+                self.__parse_line(line, fd, path)
 
 # vim: set et sts=4 sw=4 tw=120:
