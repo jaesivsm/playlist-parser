@@ -1,7 +1,4 @@
-#!/usr/bin/python2.7
-#-*- coding: utf-8 -*-
-
-import urllib
+from urllib.parse import unquote
 import logging
 import xml.parsers.expat
 
@@ -24,7 +21,7 @@ class XmlParser(object):
     def read(self, path):
         logger.info('Parsing %s' % path)
         with open(path, 'r') as fd:
-            self.__parser.Parse(urllib.unquote(fd.read()))
+            self.__parser.Parse(unquote(fd.read()))
 
     def __parsing_start_element(self, tag, attrs):
         self.previous_tags.append(self.current_tag)

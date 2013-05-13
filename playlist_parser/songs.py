@@ -1,6 +1,3 @@
-#!/usr/bin/python2.7
-#-*- coding: utf-8 -*-
-
 import shutil
 import os.path
 import logging
@@ -24,19 +21,19 @@ class Song(object):
 
     def copy(self, dst):
         if os.path.exists(os.path.join(dst, os.path.basename(self.location))):
-            logger.info(u'Song %r already here' % self)
+            logger.info('Song %r already here' % self)
             return
         if not os.path.exists(dst):
             logger.info("Creating directory %r" % dst)
             try:
                 os.mkdir(dst)
-            except OSError, error:
+            except OSError as error:
                 if error.errno != 17:
                     raise
         try:
-            logger.info(u'Copying %r to %s' % (self, dst))
+            logger.info('Copying %r to %s' % (self, dst))
             shutil.copy(self.location, dst)
-        except Exception, error:
+        except Exception as error:
             logger.exception(error)
             pass
 

@@ -1,6 +1,3 @@
-#!/usr/bin/python2.7
-#-*- coding: utf-8 -*-
-
 import os.path
 import logging
 
@@ -13,7 +10,7 @@ logger = logging.getLogger(__name__)
 class Playlist(object):
 
     def __init__(self, name=None, encoding='UTF8'):
-        logger.info(u'Creating playlist %r' % name)
+        logger.info('Creating playlist %r' % name)
         self.name = name
         self.songs = []
         self.encoding = encoding

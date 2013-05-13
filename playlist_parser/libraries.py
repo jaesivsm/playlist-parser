@@ -1,9 +1,9 @@
-#!/usr/bin/python2.7
-#-*- coding: utf-8 -*-
-
 import os
 import logging
-from xdg.BaseDirectory import xdg_data_home
+try:
+    from xdg.BaseDirectory import xdg_data_home
+except ImportError:
+    xdg_data_home = os.path.join(os.environ['HOME'], '.local/share')
 
 from playlist_parser import playlists, utils
 
