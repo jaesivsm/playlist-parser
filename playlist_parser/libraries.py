@@ -1,9 +1,5 @@
 import os
 import logging
-try:
-    from xdg.BaseDirectory import xdg_data_home
-except ImportError:
-    xdg_data_home = os.path.join(os.environ['HOME'], '.local/share')
 
 from playlist_parser import playlists, utils
 
@@ -34,8 +30,8 @@ class RhythmboxLibrary(Library, utils.XmlParser):
     def __init__(self, rhythmbox_file=None):
         self.current_playlist = None
         if not rhythmbox_file:
-            rhythmbox_file = os.path.join(xdg_data_home,
-                    'rhythmbox', 'playlists.xml')
+            rhythmbox_file = os.path.join(os.environ['HOME'],
+                    '.local', 'share', 'rhythmbox', 'playlists.xml')
         Library.__init__(self)
         utils.XmlParser.__init__(self, rhythmbox_file)
 
@@ -50,7 +46,7 @@ class RhythmboxLibrary(Library, utils.XmlParser):
     def parsing_char_data(self, data):
         if self.current_tag == "location":
             if self.current_playlist == None:
-                logger.error('[ERROR] No playlist to put "%s"' % data)
+                logger.error('[ERROR] No playlist to put %r' % data)
                 return
             self.current_playlist.add_file(data)
 

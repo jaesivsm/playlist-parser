@@ -19,7 +19,7 @@ class XmlParser(object):
         self.__parser.XmlDeclHandler = self.__parsing_xml_declaration
 
     def read(self, path):
-        logger.info('Parsing %s' % path)
+        logger.info('Parsing %r' % path)
         with open(path, 'r') as fd:
             self.__parser.Parse(unquote(fd.read()))
 
