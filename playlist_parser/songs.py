@@ -28,7 +28,7 @@ class Song(object):
             try:
                 os.mkdir(dst)
             except OSError as error:
-                if error.errno != 17:
+                if error.errno != 17:  # file already exists
                     raise
         try:
             logger.info('Copying %r to %s' % (self, dst))
