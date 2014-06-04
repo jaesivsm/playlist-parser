@@ -1,5 +1,6 @@
 import os.path
 import logging
+from math import ceil, log10
 
 from playlist_parser import utils
 from playlist_parser.songs import Song
@@ -33,8 +34,9 @@ class Playlist(object):
     def copy(self, dst):
         logger.info('Copying %r to %s' % (self, dst))
         dst = to_fat_compat(os.path.join(dst, self.name))
+        track_nb_format = "%%0%dd - " % ceil(log10(len(self.songs) + 1))
         for i, song in enumerate(self.songs):
-            song.copy(dst)
+            song.copy(dst, track_nb_format % i)
 
     def __str__(self):
         return self.name.encode(self.encoding)

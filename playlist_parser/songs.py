@@ -1,3 +1,4 @@
+import re
 import shutil
 import os.path
 import logging
@@ -21,9 +22,14 @@ class Song(object):
     def set_title(self):
         self.title = os.path.splitext(os.path.basename(self.location))[0]
 
-    def copy(self, folder_dst):
-        file_dst = to_fat_compat(os.path.join(folder_dst,
-                                              os.path.basename(self.location)))
+    def copy(self, folder_dst, track_number=None):
+        file_dst = os.path.basename(self.location)
+        if track_number is not None:
+            if re.match("^[0-9]+\W*-?\W*", file_dst):
+                file_dst = re.sub("^[0-9]+\W*-?\W*", track_number, file_dst)
+            else:
+                file_dst = track_number + file_dst
+        file_dst = to_fat_compat(os.path.join(folder_dst, file_dst))
         if os.path.exists(file_dst):
             logger.info('Song %r already here' % self)
             return
