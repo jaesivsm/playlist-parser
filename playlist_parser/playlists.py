@@ -3,6 +3,7 @@ import logging
 
 from playlist_parser import utils
 from playlist_parser.songs import Song
+from playlist_parser.utils import to_fat_compat
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +32,7 @@ class Playlist(object):
 
     def copy(self, dst):
         logger.info('Copying %r to %s' % (self, dst))
-        dst = os.path.join(dst, self.name)
+        dst = to_fat_compat(os.path.join(dst, self.name))
         for i, song in enumerate(self.songs):
             song.copy(dst)
 

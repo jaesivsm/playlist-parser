@@ -2,6 +2,8 @@ import shutil
 import os.path
 import logging
 
+from playlist_parser.utils import to_fat_compat
+
 logger = logging.getLogger(__name__)
 
 
@@ -19,20 +21,22 @@ class Song(object):
     def set_title(self):
         self.title = os.path.splitext(os.path.basename(self.location))[0]
 
-    def copy(self, dst):
-        if os.path.exists(os.path.join(dst, os.path.basename(self.location))):
+    def copy(self, folder_dst):
+        file_dst = to_fat_compat(os.path.join(folder_dst,
+                                              os.path.basename(self.location)))
+        if os.path.exists(file_dst):
             logger.info('Song %r already here' % self)
             return
-        if not os.path.exists(dst):
-            logger.info("Creating directory %r" % dst)
+        if not os.path.exists(folder_dst):
+            logger.info("Creating directory %r" % folder_dst)
             try:
-                os.mkdir(dst)
+                os.mkdir(folder_dst)
             except OSError as error:
                 if error.errno != 17:  # file already exists
                     raise
         try:
-            logger.info('Copying %r to %s' % (self, dst))
-            shutil.copy(self.location, dst)
+            logger.info('Copying %r to %s' % (self, file_dst))
+            shutil.copy(self.location, file_dst)
         except Exception as error:
             logger.exception(error)
             pass

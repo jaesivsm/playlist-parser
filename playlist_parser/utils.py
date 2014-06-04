@@ -1,8 +1,13 @@
-from urllib.parse import unquote
+import re
 import logging
 import xml.parsers.expat
+from urllib.parse import unquote
 
 logger = logging.getLogger(__name__)
+
+
+def to_fat_compat(string):
+    return re.sub('[:\*\?"<>\|]', '', string)
 
 
 class XmlParser(object):
