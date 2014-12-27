@@ -51,6 +51,7 @@ class Song(object):
         if self.title is not None:
             return self.title.encode(self.encoding)
         return 'song'
+
     def __repr__(self):
         return r'<Song %r>' % self.title
 

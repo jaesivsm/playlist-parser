@@ -13,15 +13,14 @@ class Library(object):
         self.playlists = []
 
     def __iter__(self):
-        for playlist in self.playlists:
-            yield playlist
+        return iter(self.playlists)
 
     def __getitem__(self, key):
         return self.playlists[key]
 
     def copy(self, dst):
         logger.info('Copying %r to %s' % (self, dst))
-        for playlist in self.playlists:
+        for playlist in self:
             playlist.copy(dst)
 
 
@@ -32,7 +31,7 @@ class RhythmboxLibrary(Library, utils.XmlParser):
         if not rhythmbox_file:
             rhythmbox_file = os.path.join(os.environ['HOME'],
                     '.local', 'share', 'rhythmbox', 'playlists.xml')
-        Library.__init__(self)
+        super(RhythmboxLibrary, self).__init__()
         utils.XmlParser.__init__(self, rhythmbox_file)
 
         if os.path.exists(rhythmbox_file):
