@@ -5,12 +5,11 @@ from math import ceil, log10
 
 from playlist_parser import utils
 from playlist_parser.songs import Song
-from playlist_parser.utils import to_fat_compat
 
 logger = logging.getLogger(__name__)
 
 
-class Playlist(object):
+class Playlist:
 
     def __init__(self, name=None, encoding='UTF8', **kwargs):
         logger.info('Creating playlist %r' % name)
@@ -33,10 +32,21 @@ class Playlist(object):
 
     def copy(self, dst):
         logger.info('Copying %r to %s' % (self, dst))
-        dst = to_fat_compat(os.path.join(dst, self.name))
         track_nb_format = "%%0%dd - " % ceil(log10(len(self.songs) + 1))
         for i, song in enumerate(self):
-            song.copy(dst, track_nb_format % i)
+            song.copy(os.path.join(dst, self.name), track_nb_format % i)
+
+    def export(self, dst, old_root):
+        logger.info('Exporting playlist %r => %r', self, dst)
+        for song in self:
+            song = deepcopy(song)
+            # replacing old root with new root in the playlist file
+            if old_root and song.location.startswith(old_root):
+                folder_dst = os.path.dirname(song.location)[len(old_root):]
+                folder_dst = os.path.join(dst, folder_dst.lstrip('/'))
+                song.copy(folder_dst)
+            else:
+                logger.warn("song %r couldn't be processed", song)
 
     def __str__(self):
         return self.name.encode(self.encoding)

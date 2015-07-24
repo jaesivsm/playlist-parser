@@ -10,7 +10,7 @@ def to_fat_compat(string):
     return re.sub('[:\*\?"<>\|]', '', string)
 
 
-class XmlParser(object):
+class XmlParser:
 
     def __init__(self, xml_file=None):
         self.previous_tags = []
@@ -24,7 +24,7 @@ class XmlParser(object):
         self.__parser.XmlDeclHandler = self.__parsing_xml_declaration
 
     def read(self, path):
-        logger.info('Parsing %r' % path)
+        logger.info('Parsing %r', path)
         with open(path, 'r') as fd:
             self.__parser.Parse(unquote(fd.read()))
 

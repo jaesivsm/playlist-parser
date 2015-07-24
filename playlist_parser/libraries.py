@@ -6,7 +6,7 @@ from playlist_parser import playlists, utils
 logger = logging.getLogger(__name__)
 
 
-class Library(object):
+class Library:
 
     def __init__(self):
         logging.info('Creating Library')
@@ -19,9 +19,14 @@ class Library(object):
         return self.playlists[key]
 
     def copy(self, dst):
-        logger.info('Copying %r to %s' % (self, dst))
+        logger.info('Copying %r to %s', self, dst)
         for playlist in self:
             playlist.copy(dst)
+
+    def export(self, dst, new_root):
+        logger.info('Exporting library %r => %r', dst, new_root)
+        for playlist in self:
+            playlist.export(dst, new_root)
 
 
 class RhythmboxLibrary(Library, utils.XmlParser):
@@ -50,7 +55,7 @@ class RhythmboxLibrary(Library, utils.XmlParser):
             if self.current_playlist == 'queue':
                 logger.debug('Ignoring queue file %r', data)
                 return
-            elif self.current_playlist == None:
+            elif self.current_playlist is None:
                 logger.error('[ERROR] No playlist to put %r', data)
                 return
             self.current_playlist.add_file(data)

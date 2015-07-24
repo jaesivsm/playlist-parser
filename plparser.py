@@ -17,8 +17,9 @@ def set_logger(log_format='%(module)-9s - %(levelname)-8s - %(message)s'):
 
 def parse_args():
     parser = ArgumentParser()
-    parser.add_argument(dest="action", action="store",
-                        help="a value among copy, tom3u, topls")
+    parser.add_argument(dest="action", action="store", help="a value among "
+                        "'copy', 'exporttom3u', 'exporttopls', 'tom3u', "
+                        "and 'topls'")
     parser.add_argument(dest="destination", action="store")
     parser.add_argument('-s', '--source', dest='source',
                         action='store', default=None)
@@ -58,12 +59,18 @@ def main(args):
         os.makedirs(args.destination, exist_ok=True)
     if args.action == 'copy':
         song_set.copy(args.destination)
-    elif args.action in ('tom3u', 'topls'):
-        pl_cls = playlists.M3uPlaylist if args.action == 'tom3u' \
-                                       else playlists.PlsPlaylist
+    elif args.action.startswith('export'):
+        if not args.old_root:
+            print("export funcs need old_root")
+            return False
+        song_set.export(args.destination, args.old_root)
+    tom3u = args.action.endswith('tom3u')
+    topls = args.action.endswith('topls')
+    if tom3u or topls:
+        pl_cls = playlists.M3uPlaylist if tom3u else playlists.PlsPlaylist
         for playlist in song_set:
             path = os.path.join(args.destination, "%s.%s" % (playlist.name,
-                    "m3u" if args.action == 'tom3u' else "pls"))
+                                                    "m3u" if tom3u else "pls"))
             new_pl = pl_cls(playlist.name, read=False,
                             old_root=args.old_root, new_root=args.new_root)
             new_pl.songs = playlist.songs

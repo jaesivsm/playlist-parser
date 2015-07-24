@@ -8,7 +8,7 @@ from playlist_parser.utils import to_fat_compat
 logger = logging.getLogger(__name__)
 
 
-class Song(object):
+class Song:
 
     def __init__(self, location=None, title=None, encoding='UTF8'):
         self.title = title
@@ -24,6 +24,7 @@ class Song(object):
 
     def copy(self, folder_dst, track_number=None):
         file_dst = os.path.basename(self.location)
+        folder_dst = to_fat_compat(folder_dst)
         if track_number is not None:
             if re.match("^[0-9]+\W*-?\W*", file_dst):
                 file_dst = re.sub("^[0-9]+\W*-?\W*", track_number, file_dst)
@@ -31,17 +32,13 @@ class Song(object):
                 file_dst = track_number + file_dst
         file_dst = to_fat_compat(os.path.join(folder_dst, file_dst))
         if os.path.exists(file_dst):
-            logger.info('Song %r already here' % self)
+            logger.debug('Song %r already here', self)
             return
         if not os.path.exists(folder_dst):
-            logger.info("Creating directory %r" % folder_dst)
-            try:
-                os.mkdir(folder_dst)
-            except OSError as error:
-                if error.errno != 17:  # file already exists
-                    raise
+            os.makedirs(folder_dst, exist_ok=True)
+
         try:
-            logger.info('Copying %r to %s' % (self, file_dst))
+            logger.warn('Copying %r to %s', self, file_dst)
             shutil.copy(self.location, file_dst)
         except Exception as error:
             logger.exception(error)
