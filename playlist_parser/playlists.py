@@ -5,6 +5,7 @@ from math import ceil, log10
 
 from playlist_parser import utils
 from playlist_parser.songs import Song
+from playlist_parser.utils import to_fat_compat
 
 logger = logging.getLogger(__name__)
 
@@ -92,10 +93,8 @@ class FilePlaylist(Playlist):
             # replacing old root with new root in the playlist file
             if self.old_root is not None and self.new_root is not None \
                     and song.location.startswith(self.old_root):
-                song.location = song.location[len(self.old_root):]
-                while song.location.startswith('/'):
-                    song.location = song.location[1:]
-                song.location = os.path.join(self.new_root, song.location)
+                song.location = to_fat_compat(os.path.join(self.new_root,
+                               song.location[len(self.old_root):].lstrip('/')))
             yield song
 
     def write(self, path):
