@@ -33,16 +33,17 @@ class Song:
         file_dst = to_fat_compat(os.path.join(folder_dst, file_dst))
         if os.path.exists(file_dst):
             logger.debug('Song %r already here', self)
-            return
+            return self.__class__(file_dst, self.title, self.encoding)
         if not os.path.exists(folder_dst):
             os.makedirs(folder_dst, exist_ok=True)
 
         try:
-            logger.warn('Copying %r to %s', self, file_dst)
+            logger.warn('Writing %s', file_dst)
             shutil.copy(self.location, file_dst)
         except Exception as error:
             logger.exception(error)
-            pass
+            return None
+        return self.__class__(file_dst, self.title, self.encoding)
 
     def __str__(self):
         if self.title is not None:

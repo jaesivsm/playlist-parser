@@ -42,7 +42,7 @@ def parse_args():
 
 
 def main(args):
-    song_set = None
+    song_set = new_song_set = None
     if args.rhythmbox:
         song_set = libraries.RhythmboxLibrary()
     else:
@@ -58,23 +58,23 @@ def main(args):
     if not os.path.isdir(args.destination):
         os.makedirs(args.destination, exist_ok=True)
     if args.action == 'copy':
-        song_set.copy(args.destination)
+        new_song_set = song_set.copy(args.destination)
     elif args.action.startswith('export'):
         if not args.old_root:
             print("export funcs need old_root")
             return False
-        song_set.export(args.destination, args.old_root)
+        new_song_set = song_set.export(args.destination, args.old_root)
     tom3u = args.action.endswith('tom3u')
     topls = args.action.endswith('topls')
     if tom3u or topls:
         pl_cls = playlists.M3uPlaylist if tom3u else playlists.PlsPlaylist
-        for playlist in song_set:
-            path = os.path.join(args.destination, "%s.%s" % (playlist.name,
-                                                    "m3u" if tom3u else "pls"))
-            new_pl = pl_cls(playlist.name, read=False,
-                            old_root=args.old_root, new_root=args.new_root)
-            new_pl.songs = playlist.songs
-            new_pl.write(path)
+        if new_song_set is None:
+            new_song_set = song_set
+        for pl in new_song_set:
+            path = os.path.join(args.destination,
+                                "%s.%s" % (pl.name, "m3u" if tom3u else "pls"))
+            file_pl = pl_cls.from_playlist(pl, args.old_root, args.new_root)
+            file_pl.write(path)
     return True
 
 

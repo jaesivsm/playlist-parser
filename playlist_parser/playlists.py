@@ -19,8 +19,8 @@ class Playlist:
         self.encoding = encoding
 
     def add_song(self, song):
-        logger.info(repr(song))
-        self.songs.append(song)
+        if song is not None:
+            self.songs.append(song)
 
     def add_file(self, path):
         self.songs.append(Song(path))
@@ -32,12 +32,16 @@ class Playlist:
         return self.songs[key]
 
     def copy(self, dst):
+        new_pl = Playlist(self.name, self.encoding)
         logger.info('Copying %r to %s' % (self, dst))
         track_nb_format = "%%0%dd - " % ceil(log10(len(self.songs) + 1))
         for i, song in enumerate(self):
-            song.copy(os.path.join(dst, self.name), track_nb_format % i)
+            new_pl.add_song(song.copy(os.path.join(dst, self.name),
+                                      track_nb_format % i))
+        return new_pl
 
     def export(self, dst, old_root):
+        new_pl = Playlist(self.name, self.encoding)
         logger.info('Exporting playlist %r => %r', self, dst)
         for song in self:
             song = deepcopy(song)
@@ -45,9 +49,10 @@ class Playlist:
             if old_root and song.location.startswith(old_root):
                 folder_dst = os.path.dirname(song.location)[len(old_root):]
                 folder_dst = os.path.join(dst, folder_dst.lstrip('/'))
-                song.copy(folder_dst)
+                new_pl.add_song(song.copy(folder_dst))
             else:
                 logger.warn("song %r couldn't be processed", song)
+        return new_pl
 
     def __str__(self):
         return self.name.encode(self.encoding)
@@ -69,8 +74,7 @@ class RhythmboxPlaylist(Playlist):
 class FilePlaylist(Playlist):
 
     def __init__(self, path, read=True, old_root=None, new_root=None, **kw):
-        super(FilePlaylist, self).__init__(
-                os.path.splitext(os.path.basename(path))[0], **kw)
+        super().__init__(os.path.splitext(os.path.basename(path))[0], **kw)
 
         self.path = path
         self.new_root, self.old_root = new_root, old_root
@@ -78,6 +82,13 @@ class FilePlaylist(Playlist):
 
         if read and os.path.exists(path):
             self.read(path)
+
+    @classmethod
+    def from_playlist(cls, playlist, old_root, new_root):
+        new_pl = cls(playlist.name, read=False,
+                     old_root=old_root, new_root=new_root)
+        new_pl.songs = playlist.songs
+        return new_pl
 
     def get_asb_path(self, path):
         if os.path.isabs(path):
@@ -91,10 +102,14 @@ class FilePlaylist(Playlist):
                 continue
             song = deepcopy(song)
             # replacing old root with new root in the playlist file
-            if self.old_root is not None and self.new_root is not None \
-                    and song.location.startswith(self.old_root):
-                song.location = to_fat_compat(os.path.join(self.new_root,
-                               song.location[len(self.old_root):].lstrip('/')))
+            if self.old_root is not None and self.new_root is not None:
+                if song.location.startswith(self.old_root):
+                    song.location = os.path.join(self.new_root,
+                               song.location[len(self.old_root):].lstrip('/'))
+                else:
+                    song.location = os.path.join(self.new_root,
+                                                 song.location.lstrip('/'))
+                song.location = to_fat_compat(song.location)
             yield song
 
     def write(self, path):
@@ -127,7 +142,7 @@ class PlsPlaylist(FilePlaylist, utils.XmlParser):
 class M3uPlaylist(FilePlaylist):
 
     def __init__(self, playlist_path, read=True, **kwargs):
-        super(M3uPlaylist, self).__init__(playlist_path, read, **kwargs)
+        super().__init__(playlist_path, read, **kwargs)
         self.current_song = None
 
     def __parse_line(self, line, fd, path):

@@ -9,7 +9,6 @@ logger = logging.getLogger(__name__)
 class Library:
 
     def __init__(self):
-        logging.info('Creating Library')
         self.playlists = []
 
     def __iter__(self):
@@ -19,14 +18,18 @@ class Library:
         return self.playlists[key]
 
     def copy(self, dst):
+        new_lib = Library()
         logger.info('Copying %r to %s', self, dst)
         for playlist in self:
-            playlist.copy(dst)
+            new_lib.playlists.append(playlist.copy(dst))
+        return new_lib
 
     def export(self, dst, new_root):
+        new_lib = Library()
         logger.info('Exporting library %r => %r', dst, new_root)
         for playlist in self:
-            playlist.export(dst, new_root)
+            new_lib.playlists.append(playlist.export(dst, new_root))
+        return new_lib
 
 
 class RhythmboxLibrary(Library, utils.XmlParser):
