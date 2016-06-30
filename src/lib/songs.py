@@ -3,7 +3,7 @@ import shutil
 import os.path
 import logging
 
-from playlist_parser.utils import to_fat_compat
+from lib.utils import to_fat_compat
 
 logger = logging.getLogger(__name__)
 

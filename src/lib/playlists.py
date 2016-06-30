@@ -3,9 +3,9 @@ import logging
 from copy import deepcopy
 from math import ceil, log10
 
-from playlist_parser import utils
-from playlist_parser.songs import Song
-from playlist_parser.utils import to_fat_compat
+from lib import utils
+from lib.songs import Song
+from lib.utils import to_fat_compat
 
 logger = logging.getLogger(__name__)
 

@@ -3,7 +3,7 @@ import os
 import logging
 from argparse import ArgumentParser
 
-from playlist_parser import libraries, playlists
+from lib import libraries, playlists
 
 
 def set_logger(log_format='%(module)-9s - %(levelname)-8s - %(message)s'):

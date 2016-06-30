@@ -1,7 +1,7 @@
 import os
 import logging
 
-from playlist_parser import playlists, utils
+from lib import playlists, utils
 
 logger = logging.getLogger(__name__)
 
