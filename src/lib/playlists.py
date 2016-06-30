@@ -148,11 +148,11 @@ class M3uPlaylist(FilePlaylist):
     def __parse_line(self, line, fd, path):
         if line.startswith('#EXTINF:'):
             line = line.strip()[8:]
-            length = creator = title = location = None
+            length = artist = title = location = None
             if ',' in line:
                 length, line = line.split(',', 1)
             if ' - ' in line:
-                creator, title = line.split(' - ', 1)
+                artist, title = line.split(' - ', 1)
             else:
                 title = line
             for line in fd:
@@ -167,8 +167,8 @@ class M3uPlaylist(FilePlaylist):
                             % (location, path))
                     location = None
             song = Song(location, title)
-            if creator is not None:
-                song.creator = creator
+            if artist is not None:
+                song.artist = artist
             self.add_song(song)
         elif line.startswith('#EXTM3U'):
             return
@@ -194,8 +194,8 @@ class M3uPlaylist(FilePlaylist):
                 logger.debug('Adding song %r to playlist %r' % (song, self))
                 fd.write('#EXTINF:%s,%s%s%s\n'
                          % (song.length if song.length else '',
-                            song.creator if song.creator else '',
-                            ' - ' if song.creator and song.title else '',
+                            song.artist if song.artist else '',
+                            ' - ' if song.artist and song.title else '',
                             song.title if song.title else ''))
                 fd.write("%s\n" % song.location)
 
