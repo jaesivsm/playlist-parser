@@ -71,6 +71,8 @@ def main(args):
         if new_song_set is None:
             new_song_set = song_set
         for pl in new_song_set:
+            if pl.name == 'tmp':
+                continue
             path = os.path.join(args.destination,
                                 "%s.%s" % (pl.name, "m3u" if tom3u else "pls"))
             file_pl = pl_cls.from_playlist(pl, args.old_root, args.new_root)

@@ -68,7 +68,6 @@ class RhythmboxPlaylist(Playlist):
             self.add_song(Song(path[7:]))
         else:
             self.songs[-1].location += path
-            self.songs[-1].set_title()
 
 
 class FilePlaylist(Playlist):
@@ -100,17 +99,20 @@ class FilePlaylist(Playlist):
         for song in self:
             if not song.location:
                 continue
-            song = deepcopy(song)
+            loc = song.location
             # replacing old root with new root in the playlist file
             if self.old_root is not None and self.new_root is not None:
-                if song.location.startswith(self.old_root):
-                    song.location = os.path.join(self.new_root,
-                               song.location[len(self.old_root):].lstrip('/'))
+                if loc.startswith(self.old_root):
+                    loc = os.path.join(self.new_root,
+                               loc[len(self.old_root):].lstrip('/'))
                 else:
-                    song.location = os.path.join(self.new_root,
-                                                 song.location.lstrip('/'))
-                song.location = to_fat_compat(song.location)
-            yield song
+                    loc = os.path.join(self.new_root, loc.lstrip('/'))
+                loc = to_fat_compat(loc)
+            target_song = Song(loc)
+            target_song.title = song.title
+            target_song.artist = song.artist
+            target_song.length = song.length
+            yield target_song
 
     def write(self, path):
         raise NotImplementedError('should be overridden in child class')

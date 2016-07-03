@@ -15,14 +15,11 @@ logger = logging.getLogger(__name__)
 
 class Song:
 
-    def __init__(self, location=None, title=None, encoding='UTF8'):
+    def __init__(self, location=None, encoding='UTF8'):
         self.encoding = encoding
         self.location = location
-        if location and not title:
-            title = os.path.splitext(os.path.basename(self.location))[0]
-        self.__props = {'title': title, 'length': -1}
+        self.__props = {'length': -1}
         self.__song_file = None
-        self.creator = None
 
     def __dynamic_props_getter(self, prop_name, *tag_names):
         if self.__props.get(prop_name):
@@ -32,12 +29,12 @@ class Song:
         if self.song_file:
             for tag_name in tag_names:
                 if self.song_file and self.song_file.tags.get(tag_name):
-                    self.__title = self.song_file.tags[tag_name][0]
+                    self.__props[prop_name] = self.song_file.tags[tag_name][0]
                     break
         return self.__props.get(prop_name, '')
 
     def __dynamic_props_setter(self, prop_name, tag_name, value):
-        if getattr(self, prop_name):
+        if getattr(self, prop_name) and self.song_file:
             return  # won't override proper value, not a tag editor
         self.__props[prop_name] = value
         if self.song_file:
@@ -46,13 +43,18 @@ class Song:
 
     @property
     def song_file(self):
-        if taglib is not None and self.location and self.__song_file is None:
+        if taglib is not None and self.location and self.__song_file is None \
+                and os.path.exists(self.location):
             self.__song_file = taglib.File(self.location)
         return self.__song_file
 
     @property
     def title(self):
-        return self.__dynamic_props_getter('title', 'TITLE')
+        title  = self.__dynamic_props_getter('title', 'TITLE')
+        if self.location and not title:
+            title = os.path.splitext(os.path.basename(self.location))[0]
+            self.__props['title'] = title
+        return title
 
     @title.setter
     def title(self, value):
@@ -88,7 +90,7 @@ class Song:
         file_dst = to_fat_compat(os.path.join(folder_dst, file_dst))
         if os.path.exists(file_dst):
             logger.debug('Song %r already here', self)
-            return self.__class__(file_dst, self.title, self.encoding)
+            return self.__class__(file_dst, self.encoding)
         if not os.path.exists(folder_dst):
             os.makedirs(folder_dst, exist_ok=True)
 
@@ -98,7 +100,7 @@ class Song:
         except Exception as error:
             logger.exception(error)
             return None
-        return self.__class__(file_dst, self.title, self.encoding)
+        return self.__class__(file_dst, self.encoding)
 
     def __str__(self):
         if self.title is not None:
