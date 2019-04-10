@@ -48,13 +48,8 @@ def main(args):
     else:
         song_set = libraries.Library()
         ext = os.path.splitext(args.source)[-1]
-        if ext == '.m3u':
-            song_set[0] = playlists.M3uPlaylist(args.source)
-        elif ext == '.pls':
-            song_set[0] = playlists.PlsPlaylist(args.source)
-        else:
-            print("unknown extention: %r" % ext)
-            return False
+        assert ext in playlists.EXT_TO_PL_CLS
+        song_set.append(playlists.EXT_TO_PL_CLS[ext](args.source))
     if not os.path.isdir(args.destination):
         os.makedirs(args.destination, exist_ok=True)
     if args.action == 'copy':
@@ -71,8 +66,6 @@ def main(args):
         if new_song_set is None:
             new_song_set = song_set
         for pl in new_song_set:
-            if pl.name == 'tmp':
-                continue
             path = os.path.join(args.destination,
                                 "%s.%s" % (pl.name, "m3u" if tom3u else "pls"))
             file_pl = pl_cls.from_playlist(pl, args.old_root, args.new_root)

@@ -3,7 +3,6 @@ import logging
 from copy import deepcopy
 from math import ceil, log10
 
-from lib import utils
 from lib.songs import Song
 from lib.utils import to_fat_compat
 
@@ -13,10 +12,11 @@ logger = logging.getLogger(__name__)
 class Playlist:
 
     def __init__(self, name=None, encoding='UTF8', **kwargs):
-        logger.info('Creating playlist %r' % name)
+        logger.info('Creating playlist %r', name)
         self.name = name
         self.songs = []
         self.encoding = encoding
+        self.prout = False
 
     def add_song(self, song):
         if song is not None:
@@ -33,7 +33,7 @@ class Playlist:
 
     def copy(self, dst):
         new_pl = Playlist(self.name, self.encoding)
-        logger.info('Copying %r to %s' % (self, dst))
+        logger.info('Copying %r to %s', self, dst)
         track_nb_format = "%%0%dd - " % ceil(log10(len(self.songs) + 1))
         for i, song in enumerate(self):
             new_pl.add_song(song.copy(os.path.join(dst, self.name),
@@ -51,7 +51,7 @@ class Playlist:
                 folder_dst = os.path.join(dst, folder_dst.lstrip('/'))
                 new_pl.add_song(song.copy(folder_dst))
             else:
-                logger.warn("song %r couldn't be processed", song)
+                logger.warning("song %r couldn't be processed", song)
         return new_pl
 
     def __str__(self):
@@ -64,10 +64,8 @@ class Playlist:
 class RhythmboxPlaylist(Playlist):
 
     def add_file(self, path):
-        if path.startswith('file://'):
-            self.add_song(Song(path[7:]))
-        else:
-            self.songs[-1].location += path
+        assert os.path.exists(path[7:]), "%r does not exist" % path[7:]
+        self.add_song(Song(path[7:]))
 
 
 class FilePlaylist(Playlist):
@@ -114,31 +112,15 @@ class FilePlaylist(Playlist):
             target_song.length = song.length
             yield target_song
 
+    def read(self, path):
+        raise NotImplementedError('should be overridden in child class')
+
     def write(self, path):
         raise NotImplementedError('should be overridden in child class')
 
 
-class PlsPlaylist(FilePlaylist, utils.XmlParser):
-
-    def __init__(self, playlist_path, read=True, **kwargs):
-        utils.XmlParser.__init__(self, playlist_path)
-        super(PlsPlaylist, self).__init__(playlist_path, read, **kwargs)
-        self.current_song = None
-
-    def parsing_start_element(self, tag, attrs):
-        if tag == "track":
-            self.current_song = Song(encoding=self.encoding)
-
-    def parsing_char_data(self, data):
-        if "track" in self.previous_tags and self.current_song is not None:
-            if self.current_tag == "location":
-                data = self.get_asb_path(data)
-            setattr(self.current_song, self.current_tag, data)
-
-    def parsing_end_element(self, tag):
-        if tag == "track" and self.current_song is not None:
-            self.add_song(self.current_song)
-            self.current_song = None
+class PlsPlaylist(FilePlaylist):
+    pass
 
 
 class M3uPlaylist(FilePlaylist):
@@ -150,9 +132,9 @@ class M3uPlaylist(FilePlaylist):
     def __parse_line(self, line, fd, path):
         if line.startswith('#EXTINF:'):
             line = line.strip()[8:]
-            length = artist = title = location = None
+            artist = title = location = None
             if ',' in line:
-                length, line = line.split(',', 1)
+                line = line.split(',', 1)[1]
             if ' - ' in line:
                 artist, title = line.split(' - ', 1)
             else:
@@ -165,8 +147,8 @@ class M3uPlaylist(FilePlaylist):
                     self.__parse_line(line, fd, path)
                     return
                 else:
-                    logger.warn('File not found %r in playlist %r'
-                            % (location, path))
+                    logger.warning('File not found %r in playlist %r',
+                                   location, path)
                     location = None
             song = Song(location, title)
             if artist is not None:
@@ -178,10 +160,10 @@ class M3uPlaylist(FilePlaylist):
             if os.path.exists(line):
                 self.add_file(line)
             else:
-                logger.warn('File not found %r in playlist %r' % (line, path))
+                logger.warning('File not found %r in playlist %r', line, path)
 
     def read(self, path):
-        logger.info('Parsing %r' % path)
+        logger.info('Parsing %r', path)
         with open(path, 'r') as fd:
             if fd.encoding:
                 self.encoding = fd.encoding
@@ -189,11 +171,11 @@ class M3uPlaylist(FilePlaylist):
                 self.__parse_line(line, fd, path)
 
     def write(self, path):
-        logger.info('Writing %r' % path)
+        logger.info('Writing %r', path)
         with open(path, 'w') as fd:
             fd.write('#EXTM3U\n')
             for song in self.songs_to_plfile:
-                logger.debug('Adding song %r to playlist %r' % (song, self))
+                logger.debug('Adding song %r to playlist %r', song, self)
                 fd.write('#EXTINF:%s,%s%s%s\n'
                          % (song.length if song.length else '',
                             song.artist if song.artist else '',
@@ -202,4 +184,4 @@ class M3uPlaylist(FilePlaylist):
                 fd.write("%s\n" % song.location)
 
 
-# vim: set et sts=4 sw=4 tw=120:
+EXT_TO_PL_CLS = {'.m3u': M3uPlaylist, '.pls': PlsPlaylist}

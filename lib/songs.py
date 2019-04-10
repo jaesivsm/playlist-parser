@@ -5,12 +5,10 @@ import logging
 
 from lib.utils import to_fat_compat
 
-try:
-    import taglib
-except ImportError:
-    taglib = None
+import taglib
 
 logger = logging.getLogger(__name__)
+NUMBERED_TRACK = re.compile(r'^[0-9]+\W*-?\W*')
 
 
 class Song:
@@ -50,7 +48,7 @@ class Song:
 
     @property
     def title(self):
-        title  = self.__dynamic_props_getter('title', 'TITLE')
+        title = self.__dynamic_props_getter('title', 'TITLE')
         if self.location and not title:
             title = os.path.splitext(os.path.basename(self.location))[0]
             self.__props['title'] = title
@@ -83,8 +81,8 @@ class Song:
         file_dst = os.path.basename(self.location)
         folder_dst = to_fat_compat(folder_dst)
         if track_number is not None:
-            if re.match("^[0-9]+\W*-?\W*", file_dst):
-                file_dst = re.sub("^[0-9]+\W*-?\W*", track_number, file_dst)
+            if NUMBERED_TRACK.match(file_dst):
+                file_dst = NUMBERED_TRACK.sub(track_number, file_dst)
             else:
                 file_dst = track_number + file_dst
         file_dst = to_fat_compat(os.path.join(folder_dst, file_dst))
@@ -95,7 +93,7 @@ class Song:
             os.makedirs(folder_dst, exist_ok=True)
 
         try:
-            logger.warn('Writing %s', file_dst)
+            logger.warning('Writing %s', file_dst)
             shutil.copy(self.location, file_dst)
         except Exception as error:
             logger.exception(error)
@@ -109,5 +107,3 @@ class Song:
 
     def __repr__(self):
         return r'<Song %r>' % self.title
-
-# vim: set et sts=4 sw=4 tw=120:
